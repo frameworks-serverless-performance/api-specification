@@ -1,685 +1,122 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-  title: Mock Server
-  version: '1.0'
+  title: API specification
+  description: |-
+    API specification for the endpoints used for performance testing in the thesis _Performance and price comparison of three popular backend frameworks and the AWS serverless stack_.
+  version: "1.0"
+tags:
+  - name: Framework overhead
+    description: What is the general framework overhead for a simple request?
+  - name: Compute heavy
+    description: How fast can integers be sorted and hashes calculated?
+  - name: Parsing heavy
+    description: How fast can a JSON array be parsed?
+  - name: Database heavy
+    description: How quickly can lots of database queries be performed?
 paths:
-  /api/correspondents:
+  /api/echo:
     get:
       tags:
-        - Correspondents
-      operationId: GetCorrespondents
-      responses:
-        '200':
-          description: Success
-    post:
-      tags:
-        - Correspondents
-      operationId: CreateCorrespondent
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewCorrespondent'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/NewCorrespondent'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/NewCorrespondent'
-      responses:
-        '200':
-          description: Success
-  /api/correspondents/{id}:
-    put:
-      tags:
-        - Correspondents
-      operationId: UpdateCorrespondent
+        - Framework overhead
+      summary: Returns the given string
+      description: Takes a string as a get parameter and immediatly returns the same string. Meant to test general framework overhead on a simple request.
       parameters:
-        - name: id
-          in: path
+        - name: string
+          example: "Hello world"
+          in: query
+          description: 'The string to be echoed'
           required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Correspondent'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/Correspondent'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/Correspondent'
-      responses:
-        '200':
-          description: Success
-    delete:
-      tags:
-        - Correspondents
-      operationId: DeleteCorrespondent
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api/documents:
-    get:
-      tags:
-        - Documents
-      operationId: GetDocuments
-      parameters:
-        - name: Page
-          in: query
-          style: form
-          schema:
-            type: integer
-            format: int32
-        - name: page_size
-          in: query
-          style: form
-          schema:
-            type: integer
-            format: int32
-        - name: query
-          in: query
-          style: form
           schema:
             type: string
-        - name: ordering
-          in: query
-          style: form
-          schema:
-            type: string
-        - name: tags__id__all
-          in: query
-          style: form
-          schema:
-            type: array
-            items:
-              type: integer
-              format: int32
-        - name: document_type__id
-          in: query
-          style: form
-          schema:
-            type: integer
-            format: int32
-        - name: correspondent__id
-          in: query
-          style: form
-          schema:
-            type: integer
-            format: int32
-        - name: truncate_content
-          in: query
-          style: form
-          schema:
-            type: boolean
       responses:
         '200':
-          description: Success
-  /api/documents/{id}:
-    put:
-      tags:
-        - Documents
-      operationId: UpdateDocument
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Document'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/Document'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/Document'
-      responses:
-        '200':
-          description: Success
-    delete:
-      tags:
-        - Documents
-      operationId: DeleteDocument
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api/documents/post_document:
+          description: The echoed string
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                test_request:
+                  value: "Hello world"
+  /api/compute:
     post:
       tags:
-        - Documents
-      operationId: UploadDocument
+        - Compute heavy
+      summary: Sort large array and calculate hashes
+      description: Takes a JSON array of integers and sorts them, then calculates and returns a hash. See thesis for details on hash calculation.
       requestBody:
+        description: Input array of integers
         content:
-          multipart/form-data:
+          application/json:
+            example: [3, 1, 9, 1, 4]
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                created:
-                  type: string
-                  format: date-time
-                document_type:
+                type: array
+                items:
                   type: integer
-                  format: int32
-                tags:
-                  type: array
-                  items:
-                    type: integer
-                    format: int32
-                correspondent:
-                  type: integer
-                  format: int32
-                document:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
-            encoding:
-              title:
-                style: form
-              created:
-                style: form
-              document_type:
-                style: form
-              tags:
-                style: form
-              correspondent:
-                style: form
-              document:
-                style: form
       responses:
         '200':
-          description: Success
-  /api/documents/{id}/thumb:
-    get:
+          description: The calculated hash
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                test_request:
+                  value: "64ec88ca00b268e5ba1a35678a1b5316d212f4f366b2477232534a8aeca37f3c"
+  /api/parse:
+    post:
       tags:
-        - Documents
-      operationId: GetDocumentThumb
+        - Parsing heavy
+      summary: Find a string in a JSON array
+      description: Takes a JSON array of strings and a string to be found, returns the index of the found string in the array.
       parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api/documents/{id}/download:
-    get:
-      tags:
-        - Documents
-      operationId: DownloadDocument
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-        - name: original
+        - name: searchString
+          example: "Find me!"
           in: query
-          style: form
-          schema:
-            type: boolean
-      responses:
-        '200':
-          description: Success
-  /api/documents/{id}/preview:
-    get:
-      tags:
-        - Documents
-      operationId: GetDocumentPreview
-      parameters:
-        - name: id
-          in: path
+          description: 'The string to search for in the array'
           required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api/documents/{id}/metadata:
-    get:
-      tags:
-        - Documents
-      operationId: GetDocumentMetadata
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api/document_types:
-    get:
-      tags:
-        - DocumentTypes
-      operationId: GetDocumentTypes
-      responses:
-        '200':
-          description: Success
-    post:
-      tags:
-        - DocumentTypes
-      operationId: CreateDocumentType
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewDocumentType'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/NewDocumentType'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/NewDocumentType'
-      responses:
-        '200':
-          description: Success
-  /api/document_types/{id}:
-    put:
-      tags:
-        - DocumentTypes
-      operationId: UpdateDocumentType
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DocumentType'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/DocumentType'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/DocumentType'
-      responses:
-        '200':
-          description: Success
-    delete:
-      tags:
-        - DocumentTypes
-      operationId: DeleteDocumentType
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-  /api:
-    post:
-      tags:
-        - Login
-      operationId: Root
-      responses:
-        '200':
-          description: Success
-    get:
-      tags:
-        - Login
-      responses:
-        '200':
-          description: Success
-  /api/statistics:
-    get:
-      tags:
-        - Login
-      operationId: Statistics
-      responses:
-        '200':
-          description: Success
-  /api/token:
-    post:
-      tags:
-        - Login
-      operationId: GetToken
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserInfo'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/UserInfo'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/UserInfo'
-      responses:
-        '200':
-          description: Success
-  /api/search/autocomplete:
-    get:
-      tags:
-        - Search
-      operationId: AutoComplete
-      parameters:
-        - name: term
-          in: query
-          style: form
           schema:
             type: string
-        - name: limit
-          in: query
-          style: form
-          schema:
-            type: integer
-            format: int32
+      requestBody:
+        description: Input array of strings
+        content:
+          application/json:
+            example: ["I'm a string", "Another string here", "Hello world", "Find me!", "Test123"]
+            schema:
+                type: array
+                items:
+                  type: string
       responses:
         '200':
-          description: Success
-  /api/tags:
+          description: Index of the string in the array
+          content:
+            text/plain:
+              schema:
+                type: integer
+              examples:
+                test_request:
+                  value: 3
+  /api/query:
     get:
       tags:
-        - Tags
-      operationId: GetTags
-      responses:
-        '200':
-          description: Success
-    post:
-      tags:
-        - Tags
-      operationId: CreateTag
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewTag'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/NewTag'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/NewTag'
-      responses:
-        '200':
-          description: Success
-  /api/tags/{id}:
-    put:
-      tags:
-        - Tags
-      operationId: UpdateTag
+        - Database heavy
+      summary: Does a table round-trip
+      description: Takes an initial primary key and does a "table round-trip" by following the next primary key until reaching the first primary key again. Then returns the number of queries needed for the round-trip.
       parameters:
-        - name: id
-          in: path
+        - name: initialPrimaryKey
+          example: "038aca33-a8c0-4b5d-8543-cc50b8f4895c"
+          in: query
+          description: 'The initial primary key to use in the first query'
           required: true
-          style: simple
           schema:
-            type: integer
-            format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DocTag'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/DocTag'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/DocTag'
+            type: string
       responses:
         '200':
-          description: Success
-    delete:
-      tags:
-        - Tags
-      operationId: DeleteTag
-      parameters:
-        - name: id
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Success
-components:
-  schemas:
-    Correspondent:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        slug:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-        document_count:
-          type: integer
-          format: int64
-        last_correspondence:
-          type: string
-          format: date-time
-      additionalProperties: false
-    Document:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        correspondent:
-          type: integer
-          format: int32
-          nullable: true
-        document_type:
-          type: integer
-          format: int32
-          nullable: true
-        storage_path:
-          type: integer
-          format: int32
-          nullable: true
-        title:
-          type: string
-          nullable: true
-        content:
-          type: string
-          nullable: true
-        tags:
-          type: array
-          items:
-            type: integer
-            format: int32
-          nullable: true
-        created:
-          type: string
-          format: date-time
-        created_date:
-          type: string
-          format: date-time
-        modified:
-          type: string
-          format: date-time
-        added:
-          type: string
-          format: date-time
-        archive_serial_number:
-          type: string
-          nullable: true
-        original_file_name:
-          type: string
-          nullable: true
-        archived_file_name:
-          type: string
-          nullable: true
-      additionalProperties: false
-    DocumentType:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        slug:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-        document_count:
-          type: integer
-          format: int64
-      additionalProperties: false
-    NewCorrespondent:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-        document_count:
-          type: integer
-          format: int64
-        last_correspondence:
-          type: string
-          format: date-time
-      additionalProperties: false
-    NewDocumentType:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-      additionalProperties: false
-    NewTag:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        color:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-        is_inbox_tag:
-          type: boolean
-      additionalProperties: false
-    DocTag:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        slug:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-        color:
-          type: string
-          nullable: true
-        match:
-          type: string
-          nullable: true
-        matching_algorithm:
-          type: integer
-          format: int64
-        is_insensitive:
-          type: boolean
-        is_inbox_tag:
-          type: boolean
-        document_count:
-          type: integer
-          format: int64
-      additionalProperties: false
-    UserInfo:
-      type: object
-      properties:
-        username:
-          type: string
-          nullable: true
-        password:
-          type: string
-          nullable: true
-      additionalProperties: false
+          description: The number of queries needed to reach the intial primary key again
+          content:
+            text/plain:
+              schema:
+                type: integer
+              examples:
+                test_request:
+                  value: 200
