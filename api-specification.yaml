@@ -7,6 +7,8 @@ info:
 tags:
   - name: Framework overhead
     description: What is the general framework overhead for a simple request?
+  - name: Mixed
+    description: How fast can a price request for an online shop be handled?
   - name: Compute heavy
     description: How fast can integers be sorted and hashes calculated?
   - name: Parsing heavy
@@ -38,6 +40,25 @@ paths:
               examples:
                 test_request:
                   value: "Hello world"
+  /api/getPrice:
+    post:
+      tags:
+        - Mixed
+      summary: Gets the price and tax for an order
+      description: Takes a JSON object for a price request for an order. Then retreives the per-item price as well as the tax rate for the item, calculates the price and returns a JSON object containing the per-item price, total price pre-tax, tax rate and total price including tax.
+      requestBody:
+        description: JSON object with the price request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/priceRequest'
+      responses:
+        '200':
+          description: JSON object with the per-item price, total price pre-tax, tax rate and total price including tax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/priceRequestResponse'
   /api/compute:
     post:
       tags:
@@ -55,7 +76,7 @@ paths:
                   type: integer
       responses:
         '200':
-          description: The calculated hash
+          description: The calculated hash as a string of its hexadecimal representation
           content:
             text/plain:
               schema:
@@ -120,3 +141,38 @@ paths:
               examples:
                 test_request:
                   value: 200
+            
+components:
+  schemas:
+    priceRequest:
+      type: object
+      properties:
+        itemId:
+          type: string
+          example: "038aca33-a8c0-4b5d-8543-cc50b8f4895c"
+        quantity:
+          type: integer
+          format: int32
+          example: 2
+    priceRequestResponse:
+      type: object
+      properties:
+        itemId:
+          type: string
+          example: "038aca33-a8c0-4b5d-8543-cc50b8f4895c"
+        quantity:
+          type: integer
+          format: int32
+          example: 2
+        perItemPrice:
+          type: number
+          example: 2.50
+        totalPricePreTax:
+          type: number
+          example: 5.00
+        taxRate:
+          type: number
+          example: 0.2
+        totalPriceWithTax:
+          type: number
+          example: 6.0
