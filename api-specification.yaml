@@ -45,7 +45,7 @@ paths:
       tags:
         - Mixed
       summary: Gets the price and tax for an order
-      description: Takes a JSON object for a price request for an order. Then retreives the per-item price as well as the tax rate for the item, calculates the price and returns a JSON object containing the per-item price, total price pre-tax, tax rate and total price including tax.
+      description: Takes a JSON object for a price request for an order. Then retreives the per-item price as well as the tax rate for the item, calculates the price and returns a JSON object containing the per-item price, total price pre-tax, tax rate and total price including tax. To avoid inaccuracies from floating point precision, prices are in cents.
       requestBody:
         description: JSON object with the price request
         content:
@@ -152,7 +152,6 @@ components:
           example: "038aca33-a8c0-4b5d-8543-cc50b8f4895c"
         quantity:
           type: integer
-          format: int32
           example: 2
     priceRequestResponse:
       type: object
@@ -162,17 +161,16 @@ components:
           example: "038aca33-a8c0-4b5d-8543-cc50b8f4895c"
         quantity:
           type: integer
-          format: int32
           example: 2
         perItemPrice:
-          type: number
-          example: 2.50
+          type: integer
+          example: 250
         totalPricePreTax:
-          type: number
-          example: 5.00
+          type: integer
+          example: 500
         taxRate:
           type: number
           example: 0.2
         totalPriceWithTax:
-          type: number
-          example: 6.0
+          type: integer
+          example: 600
